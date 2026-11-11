@@ -89,6 +89,31 @@
         }
       },
       "compiled_output_signal_shapes": {}
+    },
+    {
+      "id": "block_2161",
+      "type": "note",
+      "name": "Note",
+      "position": {
+        "x": 210,
+        "y": 192
+      },
+      "size": {
+        "width": 252,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [],
+        "outputs": []
+      },
+      "parameters": {
+        "text": "Product URL:\nhttps://www.amazon.co.jp/s?k=MT6701",
+        "font_size": 12,
+        "color": "mauve"
+      },
+      "compiled_input_signal_shapes": {},
+      "compiled_output_signal_shapes": {}
     }
   ],
   "connections": [

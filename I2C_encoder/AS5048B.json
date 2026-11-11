@@ -3,7 +3,7 @@
     "app_name": "controlcanvas",
     "app_version": "v260928",
     "release_stage": "beta",
-    "model_name": "AS5048B_2",
+    "model_name": "AS5048B",
     "schema_version": 1
   },
   "settings": {
@@ -23,7 +23,7 @@
       "type": "user_c_code",
       "name": "AS5048B",
       "position": {
-        "x": 192,
+        "x": 288,
         "y": 72
       },
       "size": {
@@ -72,8 +72,8 @@
       "type": "scope",
       "name": "Scope",
       "position": {
-        "x": 504,
-        "y": 132
+        "x": 480,
+        "y": 72
       },
       "size": {
         "width": 144,
@@ -95,8 +95,7 @@
       },
       "compiled_input_signal_shapes": {
         "in1": {
-          "kind": "vector",
-          "length": 2
+          "kind": "scalar"
         }
       },
       "compiled_output_signal_shapes": {}
@@ -104,9 +103,9 @@
     {
       "id": "block_2155",
       "type": "constant",
-      "name": "Constant (64, 65, 66, 67)",
+      "name": "Constant (I2C Address)",
       "position": {
-        "x": 48,
+        "x": 132,
         "y": 72
       },
       "size": {
@@ -137,140 +136,29 @@
       }
     },
     {
-      "id": "block_2157",
-      "type": "constant",
-      "name": "Constant (64, 65, 66, 67) 2",
+      "id": "block_2160",
+      "type": "note",
+      "name": "Note",
       "position": {
-        "x": 48,
-        "y": 192
+        "x": 102,
+        "y": 198
       },
       "size": {
-        "width": 96,
-        "height": 72
+        "width": 540,
+        "height": 180
       },
       "orientation": 0,
       "ports": {
         "inputs": [],
-        "outputs": [
-          {
-            "id": "out1",
-            "name": "out1",
-            "kind": "output"
-          }
-        ]
+        "outputs": []
       },
       "parameters": {
-        "value": 65,
-        "value_expression": "65",
-        "value_tunable": false
+        "text": "AS5048B I2C Address (64, 65, 66, 67)\n--------------------------------------------------\n64 ---> 0x40 (A2: NC / GND, A1: NC / GND) ... Default\n65 ---> 0x41 (A2: GND,      A1: 5V / 3.3V)\n66 ---> 0x42 (A2: 5V / 3.3V, A1: GND)\n67 ---> 0x43 (A2: 5V / 3.3V, A1: 5V / 3.3V)\n\nProduct URL:\nhttps://www.digikey.jp/ja/products/detail/ams-osram-ag/AS5048B-ADAPTERBOARD/3188613",
+        "font_size": 12,
+        "color": "mauve"
       },
       "compiled_input_signal_shapes": {},
-      "compiled_output_signal_shapes": {
-        "out1": {
-          "kind": "scalar"
-        }
-      }
-    },
-    {
-      "id": "block_2158",
-      "type": "mux",
-      "name": "Mux",
-      "position": {
-        "x": 384,
-        "y": 132
-      },
-      "size": {
-        "width": 72,
-        "height": 72
-      },
-      "orientation": 0,
-      "ports": {
-        "inputs": [
-          {
-            "id": "in1",
-            "name": "in1",
-            "kind": "input"
-          },
-          {
-            "id": "in2",
-            "name": "in2",
-            "kind": "input"
-          }
-        ],
-        "outputs": [
-          {
-            "id": "out1",
-            "name": "out1",
-            "kind": "output"
-          }
-        ]
-      },
-      "parameters": {
-        "input_count": 2
-      },
-      "compiled_input_signal_shapes": {
-        "in1": {
-          "kind": "scalar"
-        },
-        "in2": {
-          "kind": "scalar"
-        }
-      },
-      "compiled_output_signal_shapes": {
-        "out1": {
-          "kind": "vector",
-          "length": 2
-        }
-      }
-    },
-    {
-      "id": "block_2159",
-      "type": "user_c_code",
-      "name": "AS5048B 2",
-      "position": {
-        "x": 192,
-        "y": 192
-      },
-      "size": {
-        "width": 144,
-        "height": 72
-      },
-      "orientation": 0,
-      "ports": {
-        "inputs": [
-          {
-            "id": "in1",
-            "name": "in1",
-            "kind": "input"
-          }
-        ],
-        "outputs": [
-          {
-            "id": "out1",
-            "name": "out1",
-            "kind": "output"
-          }
-        ]
-      },
-      "parameters": {
-        "input_count": 1,
-        "output_count": 1,
-        "includes": [],
-        "global_declarations": "#ifndef AS5048B_USER_BLOCK_DECL\n#define AS5048B_USER_BLOCK_DECL\n\n#include <Wire.h>\n\n#define AS5048B_REG_ANGLE 0xFE\n\nstatic bool as5048b_initialized[4] = {false, false, false, false};\nstatic double as5048b_prev_deg[4] = {0.0, 0.0, 0.0, 0.0};\nstatic double as5048b_total_deg[4] = {0.0, 0.0, 0.0, 0.0};\n\n#endif\n",
-        "init_code": "Wire.begin();\nfor (int i = 0; i < 4; i++) {\n    as5048b_initialized[i] = false;\n    as5048b_prev_deg[i] = 0.0;\n    as5048b_total_deg[i] = 0.0;\n}\n",
-        "step_code": "// 入力ポート0番(inputs[0])からI2Cアドレスを取得 (例: 64 -> 0x40)\nuint8_t addr = (uint8_t)inputs[0];\n\n// 0x40〜0x43 以外の不正な値が来たら何もしない\nif (addr < 0x40 || addr > 0x43) {\n    outputs[0] = 0.0f;\n    return;\n}\n\n// 配列のインデックス (0〜3) を計算\nuint8_t idx = addr - 0x40;\n\nuint8_t highByte = 0;\nuint8_t lowByte = 0;\n\n// 指定されたアドレスのAS5048Bから2バイト読み出し\nWire.beginTransmission(addr);\nWire.write(AS5048B_REG_ANGLE);\nWire.endTransmission(false);\n\nWire.requestFrom(addr, (uint8_t)2);\nif (Wire.available() >= 2) {\n    highByte = Wire.read();\n    lowByte  = Wire.read();\n}\n\n// 14ビット合成・角度変換 [0 ~ 360 deg]\nuint16_t raw_angle = ((uint16_t)highByte << 6) | (lowByte & 0x3F);\ndouble current_deg = (double)raw_angle * 360.0 / 16384.0;\n\n// インデックス(idx)ごとに360度またぎ補正・積算\nif (!as5048b_initialized[idx]) {\n    as5048b_prev_deg[idx] = current_deg;\n    as5048b_total_deg[idx] = 0.0;\n    as5048b_initialized[idx] = true;\n} else {\n    double diff = current_deg - as5048b_prev_deg[idx];\n\n    if (diff < -180.0) {\n        diff += 360.0;\n    } else if (diff > 180.0) {\n        diff -= 360.0;\n    }\n\n    as5048b_total_deg[idx] += diff;\n    as5048b_prev_deg[idx] = current_deg;\n}\n\n// 出力ポート0番(outputs[0])へ代入\noutputs[0] = (float)as5048b_total_deg[idx];\n",
-        "direct_feedthrough": true
-      },
-      "compiled_input_signal_shapes": {
-        "in1": {
-          "kind": "scalar"
-        }
-      },
-      "compiled_output_signal_shapes": {
-        "out1": {
-          "kind": "scalar"
-        }
-      }
+      "compiled_output_signal_shapes": {}
     }
   ],
   "connections": [
@@ -290,59 +178,14 @@
       }
     },
     {
-      "id": "conn_2466",
-      "from": {
-        "block_id": "block_2158",
-        "port_id": "out1"
-      },
-      "to": {
-        "block_id": "block_2154",
-        "port_id": "in1"
-      },
-      "routing": {
-        "points": [],
-        "style": "smooth"
-      }
-    },
-    {
-      "id": "conn_2467",
+      "id": "conn_2471",
       "from": {
         "block_id": "block_2153",
         "port_id": "out1"
       },
       "to": {
-        "block_id": "block_2158",
+        "block_id": "block_2154",
         "port_id": "in1"
-      },
-      "routing": {
-        "points": [],
-        "style": "smooth"
-      }
-    },
-    {
-      "id": "conn_2469",
-      "from": {
-        "block_id": "block_2157",
-        "port_id": "out1"
-      },
-      "to": {
-        "block_id": "block_2159",
-        "port_id": "in1"
-      },
-      "routing": {
-        "points": [],
-        "style": "smooth"
-      }
-    },
-    {
-      "id": "conn_2470",
-      "from": {
-        "block_id": "block_2159",
-        "port_id": "out1"
-      },
-      "to": {
-        "block_id": "block_2158",
-        "port_id": "in2"
       },
       "routing": {
         "points": [],

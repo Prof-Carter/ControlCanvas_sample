@@ -19,51 +19,12 @@
   },
   "blocks": [
     {
-      "id": "block_2153",
-      "type": "user_c_code",
-      "name": "MT6701",
-      "position": {
-        "x": 168,
-        "y": 72
-      },
-      "size": {
-        "width": 144,
-        "height": 72
-      },
-      "orientation": 0,
-      "ports": {
-        "inputs": [],
-        "outputs": [
-          {
-            "id": "out1",
-            "name": "out1",
-            "kind": "output"
-          }
-        ]
-      },
-      "parameters": {
-        "input_count": 0,
-        "output_count": 1,
-        "includes": [],
-        "global_declarations": "#include <Wire.h>\n\n#define MT6701_ADDR 0x06\n#define MT6701_REG_ANGLE 0x03\n\nstatic bool mt6701_initialized = false;\nstatic double mt6701_prev_deg = 0.0;\nstatic double mt6701_total_deg = 0.0;\n",
-        "init_code": "Wire.begin();\nmt6701_initialized = false;\nmt6701_prev_deg = 0.0;\nmt6701_total_deg = 0.0;\n",
-        "step_code": "uint8_t highByte = 0;\nuint8_t lowByte = 0;\n\n// MT6701から2バイト(0x03, 0x04)読み出し\nWire.beginTransmission(MT6701_ADDR);\nWire.write(MT6701_REG_ANGLE);\nWire.endTransmission(false);\n\nWire.requestFrom(MT6701_ADDR, 2);\nif (Wire.available() >= 2) {\n    highByte = Wire.read();\n    lowByte  = Wire.read();\n}\n\n// 14ビット合成・角度変換 [0 ~ 360 deg]\nuint16_t raw_angle = ((uint16_t)highByte << 6) | (lowByte >> 2);\ndouble current_deg = (double)raw_angle * 360.0 / 16384.0;\n\n// 360度またぎ補正・相対角度の積算\nif (!mt6701_initialized) {\n    mt6701_prev_deg = current_deg;\n    mt6701_total_deg = 0.0;\n    mt6701_initialized = true;\n} else {\n    double diff = current_deg - mt6701_prev_deg;\n\n    if (diff < -180.0) {\n        diff += 360.0;\n    } else if (diff > 180.0) {\n        diff -= 360.0;\n    }\n\n    mt6701_total_deg += diff;\n    mt6701_prev_deg = current_deg;\n}\n\n// 出力ポートへ代入\noutputs[0] = (float)mt6701_total_deg;\n",
-        "direct_feedthrough": true
-      },
-      "compiled_input_signal_shapes": {},
-      "compiled_output_signal_shapes": {
-        "out1": {
-          "kind": "scalar"
-        }
-      }
-    },
-    {
       "id": "block_2154",
       "type": "scope",
       "name": "Scope",
       "position": {
-        "x": 372,
-        "y": 72
+        "x": 432,
+        "y": 36
       },
       "size": {
         "width": 144,
@@ -82,25 +43,48 @@
       },
       "parameters": {
         "subplot_index": 1
-      },
-      "compiled_input_signal_shapes": {
-        "in1": {
-          "kind": "scalar"
-        }
-      },
-      "compiled_output_signal_shapes": {}
+      }
     },
     {
-      "id": "block_2161",
+      "id": "block_2162",
+      "type": "constant",
+      "name": "Constant (I2C Address)",
+      "position": {
+        "x": 72,
+        "y": 36
+      },
+      "size": {
+        "width": 96,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [],
+        "outputs": [
+          {
+            "id": "out1",
+            "name": "out1",
+            "kind": "output"
+          }
+        ]
+      },
+      "parameters": {
+        "value": 6,
+        "value_expression": "6",
+        "value_tunable": false
+      }
+    },
+    {
+      "id": "block_2164",
       "type": "note",
       "name": "Note",
       "position": {
-        "x": 210,
-        "y": 192
+        "x": 162,
+        "y": 156
       },
       "size": {
-        "width": 252,
-        "height": 72
+        "width": 300,
+        "height": 144
       },
       "orientation": 0,
       "ports": {
@@ -108,19 +92,71 @@
         "outputs": []
       },
       "parameters": {
-        "text": "Product URL:\nhttps://www.amazon.co.jp/s?k=MT6701",
+        "text": "AS5048B I2C Address (6, 70)\n--------------------------------------------------\n 6 ---> 0x06 (default)\n70 ---> 0x46\n\nProduct URL:\nhttps://www.amazon.co.jp/s?k=MT6701",
         "font_size": 12,
         "color": "mauve"
+      }
+    },
+    {
+      "id": "block_2177",
+      "type": "user_c_code",
+      "name": "MT6701",
+      "position": {
+        "x": 228,
+        "y": 36
       },
-      "compiled_input_signal_shapes": {},
-      "compiled_output_signal_shapes": {}
+      "size": {
+        "width": 144,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [
+          {
+            "id": "in1",
+            "name": "in1",
+            "kind": "input"
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out1",
+            "name": "out1",
+            "kind": "output"
+          }
+        ]
+      },
+      "parameters": {
+        "input_count": 1,
+        "output_count": 1,
+        "includes": [],
+        "global_declarations": "#include <Wire.h>\n\n#ifndef MT6701_REG_ANGLE\n#define MT6701_REG_ANGLE 0x03\n#endif\n",
+        "init_code": "Wire.begin();\n",
+        "step_code": "// このブロック専用の保持変数\nstatic bool initialized = false;\nstatic double prev_deg = 0.0;\nstatic double total_deg = 0.0;\n\n// 入力ポート0からI2Cアドレスを取得（7bit範囲にマスク）\nuint8_t addr = ((uint8_t)inputs[0]) & 0x7F;\n\nif (addr == 0) {\n    outputs[0] = 0.0f;\n    return;\n}\n\n// 受信バッファにゴミが残っていればクリア\nwhile (Wire.available() > 0) {\n    Wire.read();\n}\n\n// MT6701から2バイト(0x03, 0x04)読み出し（STOPコンディションを確実に発行）\nWire.beginTransmission(addr);\nWire.write(MT6701_REG_ANGLE);\nuint8_t err = Wire.endTransmission(true);\n\nif (err == 0) {\n    uint8_t count = Wire.requestFrom(addr, (uint8_t)2);\n    if (count >= 2 && Wire.available() >= 2) {\n        uint8_t highByte = Wire.read();\n        uint8_t lowByte  = Wire.read();\n\n        // 14ビット合成・角度変換 [0 ~ 360 deg]\n        uint16_t raw_angle = ((uint16_t)highByte << 6) | (lowByte >> 2);\n        double current_deg = (double)raw_angle * 360.0 / 16384.0;\n\n        // 360度またぎ補正・相対角度の積算\n        if (!initialized) {\n            prev_deg = current_deg;\n            total_deg = 0.0;\n            initialized = true;\n        } else {\n            double diff = current_deg - prev_deg;\n\n            if (diff < -180.0) {\n                diff += 360.0;\n            } else if (diff > 180.0) {\n                diff -= 360.0;\n            }\n\n            total_deg += diff;\n            prev_deg = current_deg;\n        }\n    }\n}\n\n// 出力ポートへ代入\noutputs[0] = (float)total_deg;\n",
+        "direct_feedthrough": true
+      }
     }
   ],
   "connections": [
     {
-      "id": "conn_2463",
+      "id": "conn_2489",
       "from": {
-        "block_id": "block_2153",
+        "block_id": "block_2162",
+        "port_id": "out1"
+      },
+      "to": {
+        "block_id": "block_2177",
+        "port_id": "in1"
+      },
+      "routing": {
+        "points": [],
+        "style": "smooth"
+      }
+    },
+    {
+      "id": "conn_2490",
+      "from": {
+        "block_id": "block_2177",
         "port_id": "out1"
       },
       "to": {

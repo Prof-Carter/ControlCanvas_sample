@@ -1,0 +1,231 @@
+{
+  "metadata": {
+    "app_name": "controlcanvas",
+    "app_version": "v260928",
+    "release_stage": "beta",
+    "model_name": "model_50",
+    "schema_version": 1
+  },
+  "settings": {
+    "target_platform": "custom_board:block_2224",
+    "generated_language": "arduino_cpp",
+    "sample_time_sec": 0.01,
+    "timer_period_us": 10000,
+    "monitor_decimation": 1,
+    "serial_send_period_ms": 10,
+    "run_mode": "tuner",
+    "tuner_transport": "usb_serial",
+    "numeric_type": "float"
+  },
+  "blocks": [
+    {
+      "id": "block_2224",
+      "type": "custom_board",
+      "name": "Custom Board (M5Stack Core2)",
+      "position": {
+        "x": 48,
+        "y": 36
+      },
+      "size": {
+        "width": 144,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [],
+        "outputs": []
+      },
+      "parameters": {
+        "custom_board_schema_version": 2,
+        "label": "Custom Board",
+        "backend_id": "esp32_arduino",
+        "fqbn": "m5stack:esp32:m5stack_core2",
+        "upload_port_mode": "serial",
+        "analog_read_pins": "",
+        "digital_read_pins": "",
+        "digital_write_pins": "",
+        "pwm_pins": "",
+        "dac_pins": "",
+        "rc_servo_enabled": false,
+        "rc_servo_driver_id": "",
+        "servo_pins": "",
+        "i2c0_enabled": true,
+        "i2c1_enabled": false,
+        "i2c0_sda_pin": "",
+        "i2c0_scl_pin": "",
+        "i2c1_sda_pin": "",
+        "i2c1_scl_pin": "",
+        "m5unified_enabled": true,
+        "bluetooth_spp_enabled": false,
+        "bluetooth_spp_device_name": "ControlCanvas-M5",
+        "spi_enabled": false
+      },
+      "compiled_input_signal_shapes": {},
+      "compiled_output_signal_shapes": {}
+    },
+    {
+      "id": "block_2225",
+      "type": "user_c_code",
+      "name": "User Block",
+      "position": {
+        "x": 48,
+        "y": 240
+      },
+      "size": {
+        "width": 144,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [],
+        "outputs": [
+          {
+            "id": "out1",
+            "name": "out1",
+            "kind": "output"
+          }
+        ]
+      },
+      "parameters": {
+        "input_count": 0,
+        "output_count": 1,
+        "includes": [],
+        "global_declarations": "static float g_motor_enable = 0.0f;\n",
+        "init_code": "M5.Display.setTextSize(2);\nM5.Display.drawString(\"ON\",  45, 215);\nM5.Display.drawString(\"OFF\", 140, 215);\n",
+        "step_code": "if (M5.BtnA.wasPressed()) {\n    g_motor_enable = 1.0f;\n}\nif (M5.BtnB.wasPressed()) {\n    g_motor_enable = 0.0f;\n}\n\noutputs[0] = g_motor_enable;\n",
+        "direct_feedthrough": true
+      },
+      "compiled_input_signal_shapes": {},
+      "compiled_output_signal_shapes": {
+        "out1": {
+          "kind": "scalar"
+        }
+      }
+    },
+    {
+      "id": "block_2227",
+      "type": "roller_i2c_write",
+      "name": "Roller I2C Write",
+      "position": {
+        "x": 264,
+        "y": 156
+      },
+      "size": {
+        "width": 144,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [
+          {
+            "id": "in1",
+            "name": "in1",
+            "kind": "input"
+          },
+          {
+            "id": "in2",
+            "name": "in2",
+            "kind": "input"
+          }
+        ],
+        "outputs": []
+      },
+      "parameters": {
+        "i2c_bus": "i2c0",
+        "mode": "current",
+        "i2c_address": "0x64",
+        "i2c_order": 100,
+        "startup_retry_ms": 0,
+        "motor_enable_input": true,
+        "command_min": -500,
+        "command_max": 500,
+        "current_limit_mA": 500,
+        "stall_protection": true,
+        "motor_off_on_stall": true,
+        "output_stall_latched": false
+      },
+      "compiled_input_signal_shapes": {
+        "in1": {
+          "kind": "scalar"
+        },
+        "in2": {
+          "kind": "scalar"
+        }
+      },
+      "compiled_output_signal_shapes": {}
+    },
+    {
+      "id": "block_2228",
+      "type": "constant",
+      "name": "Constant",
+      "position": {
+        "x": 96,
+        "y": 144
+      },
+      "size": {
+        "width": 96,
+        "height": 72
+      },
+      "orientation": 0,
+      "ports": {
+        "inputs": [],
+        "outputs": [
+          {
+            "id": "out1",
+            "name": "out1",
+            "kind": "output"
+          }
+        ]
+      },
+      "parameters": {
+        "value": 100,
+        "value_expression": "100",
+        "value_tunable": false
+      },
+      "compiled_input_signal_shapes": {},
+      "compiled_output_signal_shapes": {
+        "out1": {
+          "kind": "scalar"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_2536",
+      "from": {
+        "block_id": "block_2225",
+        "port_id": "out1"
+      },
+      "to": {
+        "block_id": "block_2227",
+        "port_id": "in2"
+      },
+      "routing": {
+        "points": [],
+        "style": "smooth"
+      }
+    },
+    {
+      "id": "conn_2537",
+      "from": {
+        "block_id": "block_2228",
+        "port_id": "out1"
+      },
+      "to": {
+        "block_id": "block_2227",
+        "port_id": "in1"
+      },
+      "routing": {
+        "points": [],
+        "style": "smooth"
+      }
+    }
+  ],
+  "annotations": [],
+  "ui_state": {
+    "zoom_by_scope": {
+      "root": 1
+    }
+  }
+}
